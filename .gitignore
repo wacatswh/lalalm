@@ -5,3 +5,10 @@ __pycache__/
 *.pyc
 .venv/
 venv/
+
+# Secrets
+.env.local
+
+# Model weights (manifests in models/*.json stay tracked)
+models/*.gguf
+models/*.safetensors
