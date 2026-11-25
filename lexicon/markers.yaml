@@ -57,6 +57,19 @@ sg:
   - arrow
 
 my:
+  # Ah Beng / lala-zai register, sourced from 低清DISSY video titles (2026-11-25).
+  # The project name "lalalm" refers to this subculture. Note these terms carry the
+  # register the user explicitly asked the model to speak.
+  - tokong
+  - ah beng
+  - lala
+  - lala zai
+  - steady bom
+  - bom bibi
+  - kopitiam
+  - kennot
+  - siapa
+  - otai
   - boleh
   - tapi
   - macam
