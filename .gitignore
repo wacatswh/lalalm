@@ -9,9 +9,11 @@ venv/
 # Secrets
 .env.local
 
-# Model weights (manifests in models/*.json stay tracked)
-models/*.gguf
-models/*.safetensors
+# Model weights. models/*.safetensors only matched the top level, so a fused model
+# in models/<name>/ was committed and GitHub rejected the 883MB push. This ignores
+# everything under models/ while keeping the provenance manifests tracked.
+models/*
+!models/*.json
 .hf/
 adapters/
 data/mlx/

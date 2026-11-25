@@ -20,6 +20,7 @@ Usage:
 import argparse
 import json
 import random
+import re
 import statistics
 import sys
 from datetime import datetime, timezone
@@ -44,12 +45,41 @@ def gen_stub(prompt: str, **_) -> str:
     return f"wah ok {prompt.split()[0] if prompt.split() else 'eh'} can {tail}, no problem {tail}"
 
 
+_MLX_CACHE: dict = {}
+
+
+# Qwen3 is a hybrid thinking model and this MLX repo's chat template ignores the
+# enable_thinking kwarg -- verified: the rendered prompt is byte-identical with and
+# without it. Left alone, every generation is a <think> block and the eval measures
+# the model's English reasoning instead of its answer, which silently invalidates
+# marker density and trips the regression word-count checks. Non-thinking mode is
+# therefore forced the way Qwen3 itself implements it: pre-fill a closed think block.
+NO_THINK = "<think>\n\n</think>\n\n"
+THINK_RE = re.compile(r"<think>.*?</think>", re.S)
+
+
+def strip_think(text: str) -> str:
+    """Belt and braces: drop any think block that appears anyway."""
+    text = THINK_RE.sub(" ", text)
+    # An unterminated block means the budget ran out mid-reasoning; there is no
+    # answer in there to score.
+    if "<think>" in text:
+        text = text.split("<think>")[0]
+    return text.strip()
+
+
 def gen_mlx(prompt: str, model: str, adapter: str | None = None, **_) -> str:
+    """Generate via MLX. The model is cached across calls -- loading it per prompt
+    meant 60 full model loads for one eval run."""
     from mlx_lm import generate, load
-    m, tok = load(model, adapter_path=adapter)
+    key = (model, adapter)
+    if key not in _MLX_CACHE:
+        _MLX_CACHE[key] = load(model, adapter_path=adapter)
+    m, tok = _MLX_CACHE[key]
     msgs = [{"role": "user", "content": prompt}]
     text = tok.apply_chat_template(msgs, add_generation_prompt=True, tokenize=False)
-    return generate(m, tok, prompt=text, max_tokens=128, verbose=False)
+    out = generate(m, tok, prompt=text + NO_THINK, max_tokens=160, verbose=False)
+    return strip_think(out)
 
 
 def gen_http(prompt: str, endpoint: str, **_) -> str:
