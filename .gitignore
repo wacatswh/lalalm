@@ -12,3 +12,6 @@ venv/
 # Model weights (manifests in models/*.json stay tracked)
 models/*.gguf
 models/*.safetensors
+.hf/
+adapters/
+data/mlx/

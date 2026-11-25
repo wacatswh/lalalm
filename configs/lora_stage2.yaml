@@ -1,0 +1,7 @@
+# Stage 2: behavioural. Can push harder -- higher rank, higher LR, attention + MLP.
+lora_parameters:
+  keys: ["self_attn.q_proj", "self_attn.k_proj", "self_attn.v_proj", "self_attn.o_proj",
+         "mlp.gate_proj", "mlp.up_proj", "mlp.down_proj"]
+  rank: 16
+  scale: 20.0
+  dropout: 0.05

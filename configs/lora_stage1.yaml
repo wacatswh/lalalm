@@ -1,0 +1,8 @@
+# Stage 1: register adaptation. Deliberately a LIGHT touch -- its failure mode is
+# washing out the instruction-following behaviour we are borrowing from the instruct
+# model, so low rank, low LR, attention projections only.
+lora_parameters:
+  keys: ["self_attn.q_proj", "self_attn.k_proj", "self_attn.v_proj", "self_attn.o_proj"]
+  rank: 8
+  scale: 20.0
+  dropout: 0.0
