@@ -67,33 +67,54 @@ sources:
     enabled: true
 
   # ---------------- Spoken register ----------------
-  # Channel handles below are UNVERIFIED -- confirm each resolves before scraping,
-  # then flip verify to false. Spoken sources matter most for code-switching, which
-  # is the highest-value Manglish signal and absent from forum text.
+  # Verified 2026-11-25 with yt-dlp: these handles resolve to real channels with
+  # real videos. Handles that did NOT resolve were removed rather than left as
+  # aspirational config: @NightOwlCinematics, @JinnyboyTV, @DissyOfficial.
+  #
+  # Spoken sources fix vocabulary and register (stage 1) and are the only place
+  # code-switching appears. They do NOT give conversational pairs: captions have no
+  # reply tree, so ingest.py links each cue to the previous one by adjacency, and
+  # a podcast is mostly monologue or interview. Stage 2 pairs still need reply
+  # edges, i.e. forums and Reddit.
+
+  # Long-form Singaporean podcast. Currently the ONLY sg source that needs no
+  # credentials, so it carries the whole sg side until Reddit is unblocked.
   - kind: youtube
     name: "@yahlahbut"
     variety: sg
     register: spoken
-    enabled: true
-    verify: true
+    max_videos: 60
+    enabled: false      # see ticket 016: auto-captions yield 0% marker density
+    verify: false
 
-  - kind: youtube
-    name: "@NightOwlCinematics"
-    variety: sg
-    register: spoken
-    enabled: true
-    verify: true
-
-  - kind: youtube
-    name: "@JinnyboyTV"
-    variety: my
-    register: spoken
-    enabled: true
-    verify: true
-
+  # Malaysian political podcast, heavily Malay -- good for code-switching.
   - kind: youtube
     name: "@KeluarSekejap"
     variety: my
     register: spoken
-    enabled: true
+    max_videos: 60
+    enabled: false      # see ticket 016
+    verify: false
+
+  # Real Malaysian channel, but its output is music videos. Parked: a handful of
+  # songs is a rounding error in volume, and lyric register (rhythmic, repetitive,
+  # non-conversational) is the opposite of what a chat model needs. Lyrics are also
+  # copyrighted, so this project does not build a lyrics corpus.
+  - kind: youtube
+    name: "@otakotakVCD"
+    variety: my
+    register: spoken
+    enabled: false
+    verify: false
+
+  # NEEDS-HUMAN: the Malaysian creator troupe Dissy (~759k subs, "Don Play Play",
+  # "Kennot Lah You") is a strong fit for SKETCH/dialogue content -- not their songs.
+  # The handle @dissy resolves to an unrelated channel ("Luchia Kaito Story"), so the
+  # real channel URL is needed. Their comedy sketches are spoken dialogue and would
+  # be high-value; their music videos would not.
+  - kind: youtube
+    name: "https://www.youtube.com/@REPLACE-WITH-REAL-DISSY-URL/videos"
+    variety: my
+    register: spoken
+    enabled: false
     verify: true

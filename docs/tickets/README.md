@@ -13,7 +13,7 @@ No Jira, no GitHub Issues mirror — two trackers means neither is trusted.
 | | Phase | Tickets |
 |---|---|---|
 | **P0** | Data plane — scrapers, config, one-shot collection | 001–006 |
-| **P1** | Corpus — ingest, clean, score, build training sets | 007–009, 015 |
+| **P1** | Corpus — ingest, clean, score, build training sets | 007–009, 015, 016 |
 | **P2** | Smoke train — prove the pipeline free, on the M1 | 010–011 |
 | **P3** | Real train — Qwen3-4B on Modal | 012 |
 | **P4** | Serve — quantize, deploy to k3s on firebat (container only) | 013–014 |
@@ -37,6 +37,7 @@ No Jira, no GitHub Issues mirror — two trackers means neither is trusted.
 | 013 | Merge adapter, quantize to Q4_K_M GGUF | 012 | |
 | 014 | Serve on k3s via llama-server | 013 | **human** (exposure) |
 | 015 | Dialect-dense discovery: target boards, weight by thread | 008 | |
+| 016 | YouTube auto-captions unsuitable — park or manual-subs-only | — | |
 
 ## Dependency shape
 
