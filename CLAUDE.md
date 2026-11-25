@@ -20,11 +20,14 @@ exactly what is required.
 
 Do not violate these without the user changing them here first.
 
-- **Three machines, three jobs.** `firebat` (ssh) scrapes, stores the corpus, and serves the
-  model — it has **no usable training GPU** (Intel UHD only), so never try to train there.
-  The MacBook Air M1 is dev + small-model MLX training. Modal is for real training runs only.
-- **Never commit `data/`.** It is gitignored and stays that way. The full corpus lives on
-  firebat (409 GB free); the Mac holds a sampled dev slice capped at ~2 GB.
+- **Three machines, three jobs.** The MacBook Air M1 does dev, scraping, the corpus, and
+  small-model MLX training. `firebat` (ssh) **only serves the finished model** as a k3s
+  workload — it has no usable training GPU (Intel UHD only) and needs no host Python,
+  because llama-server ships inside the container image. Modal is for real training runs.
+  (Earlier revisions made firebat the data plane. That rested on always-on scheduling and
+  a 409 GB disk; one-shot scraping removed the first, and the corpus measures ~55 KB per
+  Lowyat thread — 200k threads is 11 GB — so the second was never needed either.)
+- **Never commit `data/`.** It is gitignored and stays that way.
 - **Tag every item with `variety`** (`sg` | `my`) and `register` (`forum` | `spoken` | `social`)
   at scrape time. This is free then and impossible to recover later.
 - **Manglish is co-equal, not an afterthought.** The user is Malaysian. `r/malaysia` alone is
@@ -43,7 +46,7 @@ Do not violate these without the user changing them here first.
 - **Scrapers are one-shot and resumable.** No cron, no CronJobs, no timers. Always append-mode
   output plus a `.seen` ID log per source, so an interrupted run is safe to re-run and never
   re-hammers a source from page one.
-- **k3s serves the model. That is all it does here.** Scrapers run from a plain venv on firebat.
+- **k3s serves the model. That is all firebat does.** Scrapers run locally on the Mac.
 
 ## Measured facts a cold session should not rediscover
 
@@ -52,9 +55,10 @@ Do not violate these without the user changing them here first.
   nearly all the density, and the biggest threads (355 and 160 posts) score exactly zero
   — they are hardware/trading megathreads in plain English. Fix is ticket **015**; don't
   train stage 1 on the corpus as it stands.
-- **firebat cannot install Python packages** without `sudo apt install python3-venv`. No
-  pip, no ensurepip, no pipx, no uv, `EXTERNALLY-MANAGED` set, no passwordless sudo.
-- **`git` is not installed on firebat.** `scripts/deploy_firebat.sh` uses tar-over-ssh.
+- **firebat cannot install Python packages** (no pip/ensurepip/pipx/uv, `EXTERNALLY-MANAGED`,
+  no passwordless sudo) and has **no git**. This no longer blocks anything: it only serves a
+  container. Do not reintroduce a host-Python dependency there.
+- **Corpus is ~55 KB per Lowyat thread.** Disk is not a constraint on the Mac.
 - **There is no `sg` data yet**, and there cannot be until Reddit credentials exist —
   every Singlish source is Reddit, Lowyat is `my`-only, YouTube `sg` channels are
   unverified. Any check asserting both varieties will fail until then.
@@ -93,5 +97,5 @@ An agent may prepare these fully, but must stop and hand over:
 
 - `HF_HOME` must be set to an explicit path. The default cache silently keeps both the original
   download and the MLX-converted copy, which is how 58 GB quietly becomes 20 GB.
-- Secrets on firebat live in a root-only env file, not a k8s Secret — nothing in the cluster
-  needs them.
+- Scraper secrets live in `.env.local` on the Mac (gitignored, mode 600). Nothing on firebat
+  needs them, because firebat does not scrape.

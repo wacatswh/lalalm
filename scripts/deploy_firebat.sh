@@ -28,28 +28,18 @@ tar -C "$REPO_ROOT" -czf - \
 echo "==> linking corpus dir"
 ssh "$HOST" 'rm -rf ~/lalalm/data && ln -sfn ~/lalalm-data ~/lalalm/data'
 
-echo "==> checking venv support"
+# Host Python is OPTIONAL. firebat only serves the model, as a k3s container that
+# carries its own runtime -- see ticket 014. The venv below matters only if you
+# ever want to run a scraper ON firebat, which the one-shot strategy does not need.
 if ! ssh "$HOST" 'python3 -c "import ensurepip"' >/dev/null 2>&1; then
-  cat >&2 <<'MSG'
-
-  BLOCKED: python3-venv is not installed on this host, and there is no
-  passwordless sudo, so this script cannot install it.
-
-  Run this on the host once (about 10 seconds):
-
-      sudo apt install -y python3-venv
-
-  Then re-run this script. It is idempotent.
-
-  Deliberately NOT done automatically: the alternatives are installing pip
-  or uv from a downloaded installer, which is a third-party package manager
-  on your server and your call to make, not mine.
-
-MSG
-  exit 2
+  echo "==> skipping venv: python3-venv absent on $HOST"
+  echo "    Not a problem -- firebat serves a container and needs no host Python."
+  echo "    Only if you want to scrape FROM firebat: sudo apt install -y python3-venv"
+  echo "==> code synced; done"
+  exit 0
 fi
 
-echo "==> building venv"
+echo "==> building venv (optional)"
 ssh "$HOST" 'cd ~/lalalm && { [ -d .venv ] || python3 -m venv .venv; } && \
   ./.venv/bin/pip install -q --upgrade pip && \
   ./.venv/bin/pip install -q -r requirements.txt && \

@@ -40,7 +40,28 @@ workloads. The scrapers should stream to disk, never accumulate a corpus in memo
 
 ---
 
-## BLOCKED 2026-11-25
+## RESOLVED 2026-11-25 — not blocked; firebat was the wrong host
+
+**The blocker was removed by deleting the requirement, not by satisfying it.**
+
+firebat was made the data plane for two reasons, and neither survives scrutiny:
+
+1. *Always-on*, to run a scheduled scraper. But scraping is one-shot by decision
+   (no cron), so nothing needs to be always-on. A one-shot pass runs on the Mac.
+2. *409 GB disk*. Never measured at the time. Actual size is **~55 KB per Lowyat
+   thread**, so 200,000 threads is ~11 GB against the Mac's 58 GB free. The big
+   disk was never needed.
+
+And serving needs no host Python either: `llama-server` ships inside the k3s
+container image. So firebat's only job is ticket 014, and this ticket's apt
+dependency is gone.
+
+**Done:** 398 Lowyat threads scraped locally (~22 MB, 16k+ normalized rows).
+`scripts/run_scrapes.sh` runs every enabled source once from the repo root.
+`scripts/deploy_firebat.sh` is retained for shipping model artifacts at 014 and
+now skips the venv step with a note instead of failing.
+
+### Superseded (kept for the reasoning)
 
 `NEEDS-HUMAN:` two things on firebat need root, and there is no passwordless sudo:
 

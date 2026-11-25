@@ -1,16 +1,21 @@
-"""Prove 007: PII patterns are scrubbed, and register-bearing text is not mangled."""
+"""Prove 007: PII patterns are scrubbed, and register-bearing text is not mangled.
+
+Every identifier below is deliberately INVALID-but-well-formed (all-zero NRIC and
+phone, .invalid TLD) rather than merely fabricated. This file is public, and a
+realistic-looking NRIC could coincidentally belong to a real person.
+"""
 import sys
 sys.path.insert(0, "scripts")
 from ingest import scrub
 
 cases = [
-    ("my ic is 880101-14-5523 ok", "<nric>"),
-    ("nric S1234567D lah", "<nric>"),
-    ("email me at foo.bar+x@example.com", "<email>"),
+    ("my ic is 000000-00-0000 ok", "<nric>"),
+    ("nric S0000000A lah", "<nric>"),
+    ("email me at nobody+test@example.invalid", "<email>"),
     ("see https://example.com/thing for more", "<url>"),
-    ("call 012-345 6789 can", "<phone>"),
-    ("my hp 91234567 ah", "<phone>"),
-    ("thanks u/someuser for the tip", "<user>"),
+    ("call 010-000 0000 can", "<phone>"),
+    ("my hp 80000000 ah", "<phone>"),
+    ("thanks u/exampleuser for the tip", "<user>"),
     ("cc @someone.else here", "<user>"),
 ]
 for text, token in cases:

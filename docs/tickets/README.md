@@ -16,7 +16,7 @@ No Jira, no GitHub Issues mirror — two trackers means neither is trusted.
 | **P1** | Corpus — ingest, clean, score, build training sets | 007–009, 015 |
 | **P2** | Smoke train — prove the pipeline free, on the M1 | 010–011 |
 | **P3** | Real train — Qwen3-4B on Modal | 012 |
-| **P4** | Serve — quantize and deploy to k3s on firebat | 013–014 |
+| **P4** | Serve — quantize, deploy to k3s on firebat (container only) | 013–014 |
 
 ## Index
 
@@ -27,7 +27,7 @@ No Jira, no GitHub Issues mirror — two trackers means neither is trusted.
 | 003 | Reddit API credentials wizard | — | **human** |
 | 004 | YouTube caption scraper: fix ordering + dedup bug | — | |
 | 005 | Lowyat.NET forum scraper | 002 | |
-| 006 | Bootstrap firebat and run the one-shot scrapes | 001–005 | |
+| 006 | Run the one-shot scrapes (locally; firebat not needed) | 001–005 | |
 | 007 | Ingest + normalize + PII scrub | 006 | |
 | 008 | Marker lexicon, density scoring, dedup, saturation report | 007 | |
 | 009 | Build stage-1 corpus and stage-2 pair sets | 008 | |
