@@ -1,0 +1,4 @@
+yt-dlp
+praw
+beautifulsoup4
+requests
