@@ -127,14 +127,25 @@ sources:
     enabled: false
     verify: false
 
-  # NEEDS-HUMAN: the Malaysian creator troupe Dissy (~759k subs, "Don Play Play",
-  # "Kennot Lah You") is a strong fit for SKETCH/dialogue content -- not their songs.
-  # The handle @dissy resolves to an unrelated channel ("Luchia Kaito Story"), so the
-  # real channel URL is needed. Their comedy sketches are spoken dialogue and would
-  # be high-value; their music videos would not.
+  # 低清DISSY, confirmed 2026-11-25. Its long-form talk formats (【无码聊天室】,
+  # 【SIAPA TU】, 【假正经】) ARE spoken dialogue, and some carry manual zh-Hant subs
+  # rather than only ASR -- so unlike the podcasts in ticket 016, real human-authored
+  # text exists here.
+  #
+  # Still disabled, for a different reason: measured across 200 titles, the content is
+  # 78% Chinese by character count. It is Malaysian CHINESE register (Mandarin and
+  # Hokkien with Manglish mixed in), and scripts/markers.py tokenises [A-Za-z']+, so
+  # the scorer, saturation report and eval are all blind to it. Enabling this without
+  # CJK support would add tens of thousands of rows that every quality metric scores
+  # as empty.
+  #
+  # Dissy is therefore used as a VOCABULARY source, not a corpus source: 200 titles
+  # were mined into lexicon/markers.yaml (tokong, ah beng, lala, steady bom, bom bibi,
+  # kennot, siapa, kopitiam, otai) and those terms drive ticket 017's synthetic pairs.
+  # To use it as corpus, do the CJK work in 017's notes first.
   - kind: youtube
-    name: "https://www.youtube.com/@REPLACE-WITH-REAL-DISSY-URL/videos"
+    name: "https://www.youtube.com/@dissy.official"
     variety: my
     register: spoken
     enabled: false
-    verify: true
+    verify: false
