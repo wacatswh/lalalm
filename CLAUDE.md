@@ -45,6 +45,23 @@ Do not violate these without the user changing them here first.
   re-hammers a source from page one.
 - **k3s serves the model. That is all it does here.** Scrapers run from a plain venv on firebat.
 
+## Measured facts a cold session should not rediscover
+
+- **Lowyat recency discovery pulls the wrong threads.** First 172 threads scored mean
+  `marker_score` 0.0042 with only 5% of rows carrying any marker. 34 of 122 threads hold
+  nearly all the density, and the biggest threads (355 and 160 posts) score exactly zero
+  — they are hardware/trading megathreads in plain English. Fix is ticket **015**; don't
+  train stage 1 on the corpus as it stands.
+- **firebat cannot install Python packages** without `sudo apt install python3-venv`. No
+  pip, no ensurepip, no pipx, no uv, `EXTERNALLY-MANAGED` set, no passwordless sudo.
+- **`git` is not installed on firebat.** `scripts/deploy_firebat.sh` uses tar-over-ssh.
+- **There is no `sg` data yet**, and there cannot be until Reddit credentials exist —
+  every Singlish source is Reddit, Lowyat is `my`-only, YouTube `sg` channels are
+  unverified. Any check asserting both varieties will fail until then.
+- Lowyat serves `/topic/<id>/all` (one request per thread, not per page) and
+  `robots.txt` disallows `/index.php`, so the legacy `index.php?showtopic=` form must
+  never be used.
+
 ## Human gates
 
 An agent may prepare these fully, but must stop and hand over:
