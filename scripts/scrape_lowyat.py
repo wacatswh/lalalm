@@ -34,6 +34,7 @@ import requests
 from bs4 import BeautifulSoup
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import markers
 from sources import load
 
 BASE = "https://forum.lowyat.net"
@@ -89,8 +90,47 @@ class Fetcher:
         return None
 
 
+def discover_boards(f: Fetcher, boards: list[str], limit: int,
+                    page_step: int = 30, max_pages: int = 60) -> list[tuple[str, str]]:
+    """(thread_id, board) by crawling named board listing pages.
+
+    Replaces sitemap discovery. The sitemap spans all 115 boards and the tech and
+    trading boards dominate it by volume while scoring 0.0000 marker density, so
+    recency-based discovery spends most of the budget on plain English about graphics
+    cards. Board paths like /Kopitiam are allowed by robots.txt (only /index.php,
+    /lofiversion and one topic are disallowed) and paginate as /Board/+30.
+    """
+    found: list[tuple[str, str]] = []
+    seen: set[str] = set()
+    per_board = max(limit // max(len(boards), 1), 1)
+
+    for board in boards:
+        got = 0
+        for page in range(max_pages):
+            url = f"{BASE}/{board}" if page == 0 else f"{BASE}/{board}/+{page * page_step}"
+            html = f.get(url)
+            if not html:
+                break
+            # dict.fromkeys dedupes within the page while preserving order; board
+            # pages link the same topic up to 8 times.
+            ids = list(dict.fromkeys(re.findall(r"/topic/(\d+)", html)))
+            fresh = []
+            for i in ids:
+                if i not in seen:
+                    seen.add(i)
+                    fresh.append(i)
+                    found.append((i, board))
+            got += len(fresh)
+            if got >= per_board or not fresh:
+                break
+        print(f"  {board}: {got} threads")
+        if len(found) >= limit:
+            break
+    return found[:limit]
+
+
 def discover(f: Fetcher, limit: int) -> list[str]:
-    """Thread ids from the sitemap. Never guesses board ids."""
+    """Thread ids from the sitemap. Kept as a fallback; prefer discover_boards."""
     index = f.get(f"{BASE}/sitemap_index.xml")
     if not index:
         return []
@@ -202,6 +242,8 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--max", type=int, default=None)
     ap.add_argument("--topic", action="append", default=[])
+    ap.add_argument("--floor", type=float, default=None,
+                    help="min mean marker density for a thread to be kept")
     args = ap.parse_args()
 
     srcs = load(kind="lowyat")
@@ -215,32 +257,70 @@ def main() -> None:
     out_file, seen_file = OUT_DIR / "lowyat.jsonl", OUT_DIR / "lowyat.seen"
     seen = load_seen(seen_file)
 
+    floor = args.floor if args.floor is not None else src.get("min_thread_density", 0.0)
     f = Fetcher()
-    ids = args.topic or discover(f, limit + len(seen))
-    todo = [i for i in ids if i not in seen][:limit]
-    print(f"{len(ids)} discovered, {len(seen)} already done, {len(todo)} to fetch")
 
-    posts = threads = 0
-    with out_file.open("a", encoding="utf-8") as fh, seen_file.open("a", encoding="utf-8") as sf:
+    if args.topic:
+        pairs = [(t, None) for t in args.topic]
+    elif src.get("discover") == "boards" and src.get("boards"):
+        print(f"discovering across {len(src['boards'])} boards:")
+        pairs = discover_boards(f, src["boards"], limit + len(seen))
+    else:
+        pairs = [(t, None) for t in discover(f, limit + len(seen))]
+
+    todo = [(t, b) for t, b in pairs if t not in seen][:limit]
+    print(f"{len(pairs)} discovered, {len(seen)} already done, {len(todo)} to fetch "
+          f"(density floor {floor})")
+
+    skip_file = OUT_DIR / "lowyat.skipped"
+    posts = threads = skipped_thin = 0
+    with out_file.open("a", encoding="utf-8") as fh, \
+         seen_file.open("a", encoding="utf-8") as sf, \
+         skip_file.open("a", encoding="utf-8") as kf:
         try:
-            for tid in todo:
+            for tid, board in todo:
+                if tid in seen:      # guard: discovery must never cause a re-fetch
+                    continue
+                seen.add(tid)
                 html = f.get(f"{BASE}/topic/{tid}/all")
                 if html is None:
                     continue
                 rows = parse_thread(html, tid, tags)
+                if not rows:
+                    sf.write(tid + "\n"); sf.flush()
+                    continue
+
+                # Thread-level density gate. Cheaper than filtering later, and it stops
+                # zero-dialect megathreads from dominating the corpus by sheer volume --
+                # the largest threads measured exactly 0.0000. Gating THREADS, not
+                # utterances: the project invariant is to rank individual text, never
+                # gate it, and a thread is cheap to re-fetch if the floor was wrong.
+                dens = [markers.density(r["text"], tags["variety"]) for r in rows]
+                mean = sum(dens) / len(dens)
+                if mean < floor:
+                    kf.write(json.dumps({"thread_id": tid, "board": board or rows[0].get("board"),
+                                         "posts": len(rows), "mean_density": round(mean, 5)}) + "\n")
+                    kf.flush()
+                    sf.write(tid + "\n"); sf.flush()
+                    skipped_thin += 1
+                    continue
+
                 for r in rows:
+                    if board and not r.get("board"):
+                        r["board"] = board
                     fh.write(json.dumps(r, ensure_ascii=False) + "\n")
                 fh.flush()
-                sf.write(tid + "\n")
-                sf.flush()
+                sf.write(tid + "\n"); sf.flush()
                 posts += len(rows)
                 threads += 1
                 if threads % 25 == 0:
-                    print(f"  {threads} threads, {posts} posts")
+                    print(f"  kept {threads} threads / {posts} posts, "
+                          f"skipped {skipped_thin} below floor")
         except KeyboardInterrupt:
             print(f"\n[interrupted] {threads} threads written, safe to re-run")
 
-    print(f"[ok] lowyat -> {out_file.name} (+{threads} threads, {posts} posts)")
+    print(f"[ok] lowyat -> {out_file.name} (+{threads} threads, {posts} posts, "
+          f"{skipped_thin} threads below density floor)")
 
 
 if __name__ == "__main__":

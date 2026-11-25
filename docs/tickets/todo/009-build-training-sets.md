@@ -18,9 +18,14 @@ already, because 001/005 preserved `parent_uid`. This is where that decision pay
   token count.
 - **Stage 2** → `data/processed/stage2.jsonl` (`{prompt, response, variety}`): join each item to
   its `parent_uid`. Filter: response score above a threshold, both sides non-trivial length,
-  response marker density above the floor. Target **10–30k pairs, balanced `sg`/`my`** — if
-  `my` falls short, downsample `sg` rather than shipping an unbalanced set, and say so in the
-  report.
+  response marker density above the floor. Target **10–30k pairs**.
+
+  **Scope change 2026-11-25: `my`-only.** The original target was balanced `sg`/`my`. Every
+  Singlish source is now closed — HardwareZone's robots.txt forbids LLM training use, X and
+  Threads are not viable, YouTube ASR normalises dialect away (ticket 016) — and Reddit
+  credentials were dropped. So `sg` is permanently zero and a balance gate could never go
+  green. A gate that can never pass is worse than no gate. The `sg` sources stay in
+  `sources.yaml` so this is reversible in two minutes if Reddit is ever enabled.
 - Held-out split for eval (010): ~2% of stage 1, stratified by variety. Never seen in training.
 - **Dev slice** → a sampled subset capped at ~2 GB for the Mac, since the full corpus stays on
   firebat (invariant).
@@ -41,6 +46,9 @@ print(f'{len(s2)} pairs, sg={sg} my={my}, ratio={r:.2f}')"
 `scripts/build_sets.py`
 
 ## Notes
-If stage 2 cannot reach 10k balanced pairs, that is a **data** problem, not a build problem —
-move this to `blocked/` with the actual counts and go back to 005 / more Manglish sources.
-Do not lower the threshold to make the check pass.
+If stage 2 cannot reach 10k pairs, that is a **data** problem, not a build problem — move this
+to `blocked/` with the actual counts and scrape more boards (015). Do not lower the threshold
+to make the check pass.
+
+Cap per-thread contribution so one 355-post megathread cannot outweigh forty short
+dialect-dense threads (015), and mix in the 017 vocabulary pairs at a capped ratio.

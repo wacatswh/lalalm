@@ -61,10 +61,30 @@ sources:
   # /lofiversion for User-agent:*, so ONLY /topic/<id> URLs are permitted.
   - kind: lowyat
     name: forum.lowyat.net
-    discover: sitemap
+    discover: boards          # board crawl, not sitemap -- see ticket 015
     variety: my
     register: forum
     enabled: true
+    min_thread_density: 0.008
+    # Measured: sitemap-recent spans all 115 boards and the tech/trading boards
+    # dominate by volume while scoring 0.0000 marker density. These are the social
+    # boards where the dialect actually lives. Kopitiam alone carries 8160+ threads
+    # in a 90-day window, so this is not a volume compromise.
+    # Deliberately excluded: every *GarageSales board (classified ads are formulaic),
+    # the game-specific boards (English jargon), and all hardware/software boards.
+    boards:
+      - Kopitiam
+      - SeriousKopitiam
+      - JokesHeaven
+      - TheMuseumOfKopitiam
+      - CupidsCorner
+      - GirlsClub
+      - FootballLounge
+      - TheSportsChannel
+      - CarClubs
+      - BikerBase
+      - PropertyTalk
+      - PetsWonderland
 
   # ---------------- Spoken register ----------------
   # Verified 2026-11-25 with yt-dlp: these handles resolve to real channels with
