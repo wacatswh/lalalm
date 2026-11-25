@@ -1,0 +1,99 @@
+# Corpus sources. Every scraper reads this file; nothing hardcodes a source list.
+#
+# variety:  sg | my          -- which dialect. Required. Drives per-variety balance.
+# register: forum | spoken | social
+# enabled:  false parks a source without deleting it (keeps the reasoning visible)
+# verify:   true means the identifier has NOT been confirmed to exist yet.
+#           Scrapers skip verify:true entries unless --include-unverified is passed.
+#
+# Manglish is co-equal here, not an afterthought. r/malaysia is noticeably more
+# formal-English than r/singapore, so `my` depth has to come from Lowyat and from
+# Malaysian spoken sources -- not from treating the two subreddits as equivalent.
+
+sources:
+  # ---------------- Singlish: Reddit ----------------
+  - kind: reddit
+    name: singapore
+    variety: sg
+    register: social
+    enabled: true
+
+  - kind: reddit
+    name: SingaporeRaw
+    variety: sg
+    register: social
+    enabled: true
+
+  - kind: reddit
+    name: askSingapore
+    variety: sg
+    register: social
+    enabled: true
+
+  # ---------------- Manglish: Reddit ----------------
+  - kind: reddit
+    name: malaysia
+    variety: my
+    register: social
+    enabled: true
+
+  - kind: reddit
+    name: Bolehland
+    variety: my
+    register: social
+    enabled: true
+
+  - kind: reddit
+    name: malaysians
+    variety: my
+    register: social
+    enabled: true
+
+  - kind: reddit
+    name: MalaysianFood
+    variety: my
+    register: social
+    enabled: true
+
+  # ---------------- Manglish: forum ----------------
+  # Discovery via sitemap_index.xml rather than hardcoded board ids, so we never
+  # guess an id. robots.txt (checked 2026-11-25) disallows /index.php and
+  # /lofiversion for User-agent:*, so ONLY /topic/<id> URLs are permitted.
+  - kind: lowyat
+    name: forum.lowyat.net
+    discover: sitemap
+    variety: my
+    register: forum
+    enabled: true
+
+  # ---------------- Spoken register ----------------
+  # Channel handles below are UNVERIFIED -- confirm each resolves before scraping,
+  # then flip verify to false. Spoken sources matter most for code-switching, which
+  # is the highest-value Manglish signal and absent from forum text.
+  - kind: youtube
+    name: "@yahlahbut"
+    variety: sg
+    register: spoken
+    enabled: true
+    verify: true
+
+  - kind: youtube
+    name: "@NightOwlCinematics"
+    variety: sg
+    register: spoken
+    enabled: true
+    verify: true
+
+  - kind: youtube
+    name: "@JinnyboyTV"
+    variety: my
+    register: spoken
+    enabled: true
+    verify: true
+
+  - kind: youtube
+    name: "@KeluarSekejap"
+    variety: my
+    register: spoken
+    enabled: true
+    verify: true
