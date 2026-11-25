@@ -37,3 +37,37 @@ ssh firebat 'set -e; test -d /var/lib/lalalm/data/raw; \
 ## Notes
 Keep an eye on firebat's RAM during scraping — it has ~11 GB available and is carrying k3s
 workloads. The scrapers should stream to disk, never accumulate a corpus in memory.
+
+---
+
+## BLOCKED 2026-11-25
+
+`NEEDS-HUMAN:` two things on firebat need root, and there is no passwordless sudo:
+
+```sh
+sudo apt install -y git python3-venv
+```
+
+`python3-venv` is the hard blocker — firebat has no `pip`, no `ensurepip`, no `pipx`
+and no `uv`, and `/usr/lib/python3.13/EXTERNALLY-MANAGED` is set, so there is no
+no-root path to installing dependencies. `git` is optional (`scripts/deploy_firebat.sh`
+uses tar-over-ssh instead) but worth having.
+
+Deliberately not worked around: the alternative was downloading and executing a
+third-party installer (`get-pip.py` or `uv`) onto the user's homelab server, which
+is their decision, not an agent's.
+
+### Already done
+- `scripts/deploy_firebat.sh` — tar-over-ssh sync, venv build, verification. Run it
+  again after the apt install; it is idempotent and now fails with the exact command
+  needed.
+- `scripts/run_scrapes.sh` — one-shot runner for all enabled sources, skips Reddit
+  cleanly when credentials are absent.
+- Code is already synced to `~/lalalm` on firebat; corpus dirs exist at
+  `~/lalalm-data`, logs at `~/lalalm-logs`, secrets dir at `~/.config/lalalm`.
+
+### Path change from the original ticket
+The ticket specified `/var/lib/lalalm/data` and `/etc/lalalm/env`. Both need root.
+Changed to `~/lalalm-data` and `~/.config/lalalm/env`, which preserves the actual
+requirement — corpus outside the code checkout, so a stray `git clean` cannot reach
+it — without root.
