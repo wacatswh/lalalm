@@ -13,7 +13,7 @@ No Jira, no GitHub Issues mirror — two trackers means neither is trusted.
 | | Phase | Tickets |
 |---|---|---|
 | **P0** | Data plane — scrapers, config, one-shot collection | 001–006 |
-| **P1** | Corpus — ingest, clean, score, build training sets | 007–009 |
+| **P1** | Corpus — ingest, clean, score, build training sets | 007–009, 015 |
 | **P2** | Smoke train — prove the pipeline free, on the M1 | 010–011 |
 | **P3** | Real train — Qwen3-4B on Modal | 012 |
 | **P4** | Serve — quantize and deploy to k3s on firebat | 013–014 |
@@ -36,6 +36,7 @@ No Jira, no GitHub Issues mirror — two trackers means neither is trusted.
 | 012 | Modal training script for Qwen3-4B | 011 | **human** |
 | 013 | Merge adapter, quantize to Q4_K_M GGUF | 012 | |
 | 014 | Serve on k3s via llama-server | 013 | **human** (exposure) |
+| 015 | Dialect-dense discovery: target boards, weight by thread | 008 | |
 
 ## Dependency shape
 
@@ -46,4 +47,6 @@ No Jira, no GitHub Issues mirror — two trackers means neither is trusted.
 004 ─┘       │                         ├─ 011 ─ 012* ─ 013 ─ 014*
              └─────────────── 010 ─────┘
 ```
-`*` = human gate.
+`*` = human gate. 015 was raised from 008's findings and gates real training quality:
+the first 172 threads scored 0.0042 mean marker density with 5% of rows carrying any
+marker, so discovery needs fixing before 009's pair set is worth training on.

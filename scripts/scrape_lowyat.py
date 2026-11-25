@@ -120,8 +120,24 @@ def post_author(tbl) -> str:
     return a.get_text(strip=True) if a else ""
 
 
+def board_of(soup) -> str | None:
+    """Board name from the navstrip ('Lowyat.NET -> Kopitiam').
+
+    Recorded per thread because the sitemap exposes only /topic/<id> with no board,
+    so without this the saturation report cannot tell which boards are actually
+    Manglish-dense -- and recency-based discovery skews heavily to the hardware and
+    trading boards, which are written in fairly plain English.
+    """
+    nav = soup.select_one("#navstrip, .navstrip")
+    if not nav:
+        return None
+    parts = [p.strip() for p in nav.get_text(">", strip=True).split(">") if p.strip()]
+    return parts[-1] if parts else None
+
+
 def parse_thread(html: str, thread_id: str, tags: dict) -> list[dict]:
     s = BeautifulSoup(html, "lxml")
+    board = board_of(s)
     raw: list[dict] = []
 
     for tbl in s.select("table.post_table"):
@@ -172,7 +188,7 @@ def parse_thread(html: str, thread_id: str, tags: dict) -> list[dict]:
 
         out.append({"thread_id": thread_id, "post_id": p["post_id"],
                     "parent_post_id": parent, "created": p["when"],
-                    "text": p["text"], **tags})
+                    "board": board, "text": p["text"], **tags})
     return out
 
 

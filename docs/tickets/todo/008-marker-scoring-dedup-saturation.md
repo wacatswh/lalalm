@@ -49,3 +49,31 @@ test -f docs/saturation.md && grep -qi 'saturat' docs/saturation.md && echo ok
 
 ## Notes
 Only derived data belongs under `data/`; the lexicon is source, so it is tracked at the repo root.
+
+---
+
+## STATUS 2026-11-25 — implemented and running; Done-when blocked on `sg` data
+
+`NEEDS-HUMAN:` the `Done-when` check asserts both varieties are present. There is
+currently **no `sg` data at all**, because every Singlish source is Reddit and Reddit
+is gated on credentials (ticket 003). Lowyat is `my`-only and the YouTube `sg`
+channels are still `verify: true`.
+
+### Done and verified on 14,791 real `my` rows
+- `lexicon/markers.yaml` — 67 seed terms, shared with 010.
+- `scripts/markers.py` — density, longest-match-first so `macam mana` beats `macam`,
+  `\b` both ends so `lah` does not match inside `blah` nor `mah` inside `mahal`.
+- `scripts/score.py` — `marker_score`, exact-hash dedup only, drops only text under
+  3 tokens. No language-ID gate (invariant).
+- `scripts/saturation.py` — per variety, per source, per board, with the stopping-rule
+  verdict and a known-limitations section. Writes `docs/saturation.md`.
+- `scripts/mine_lexicon.py` — candidate markers from real data vs a system wordlist.
+
+### What the mining found (both were real bugs, now fixed)
+1. `"This post has been edited by <user> : <date>"` in 431 of the first 4,037 rows —
+   boilerplate *and* a username leak in a form the handle patterns did not match.
+   Now stripped in `ingest.py`, which also cleans rows already collected.
+2. Discovery is pulling the wrong threads. See ticket **015**, raised with evidence.
+
+Top real markers observed: `kena` (120), `lah` (113), `liao` (66), `macam` (50),
+`meh` (46), `lagi` (46), `boleh` (35), `makan` (35), `leh` (29).

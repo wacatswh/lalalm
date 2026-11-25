@@ -44,7 +44,25 @@ SCRUBS: list[tuple[re.Pattern, str]] = [
 ]
 
 
+# Forum chrome that is not language. "This post has been edited by <user> : <date>"
+# appeared in 431 of the first 4037 rows -- boilerplate AND a username leak in a form
+# the handle patterns above do not match.
+BOILERPLATE: list[re.Pattern] = [
+    re.compile(r"This post has been edited by\s+[^:]{1,40}:\s*[A-Za-z0-9 ,:]{0,30}(?:[AP]M)?",
+               re.I),
+    re.compile(r"Attached image\(s\)|Attached thumbnail\(s\)|Click to enlarge", re.I),
+    re.compile(r"\bQUOTE\s*\([^)]{0,80}\)", re.I),  # quote blocks the selectors missed
+]
+
+
+def strip_boilerplate(text: str) -> str:
+    for pat in BOILERPLATE:
+        text = pat.sub(" ", text)
+    return text
+
+
 def scrub(text: str) -> str:
+    text = strip_boilerplate(text)
     for pat, repl in SCRUBS:
         text = pat.sub(repl, text)
     return re.sub(r"\s+", " ", text).strip()
@@ -77,6 +95,7 @@ def from_lowyat(r: dict) -> dict:
         "parent_uid": f"lowyat:{r['parent_post_id']}" if r.get("parent_post_id") else None,
         "thread_uid": f"lowyat:{r['thread_id']}",
         "text": scrub(r.get("text", "")), "score": None, "created": r.get("created"),
+        "board": r.get("board"),
         "variety": r["variety"], "register": r["register"],
     }
 
