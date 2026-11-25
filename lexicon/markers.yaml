@@ -1,0 +1,81 @@
+# Dialect marker lexicon. Shared by eval (010) and corpus scoring (008).
+#
+# Used to RANK and WEIGHT, never to gate. Language-ID classifiers label Singlish
+# as either "English" or low-confidence garbage, so any language filter deletes
+# precisely the best text in the corpus. Marker density is the substitute.
+#
+# This is a seed. Ticket 008 extends it by reading real scraped data -- the list
+# below is what I could write down a priori, not the finished lexicon.
+
+both:
+  - lah
+  - lor
+  - leh
+  - meh
+  - hor
+  - mah
+  - liao
+  - sia
+  - wah
+  - walao
+  - aiyo
+  - aiyah
+  - alamak
+  - kena
+  - makan
+  - tapau
+  - shiok
+  - sian
+  - paiseh
+  - blur
+  - can or not
+  - cannot make it
+  - got or not
+  - izzit
+  - one ah
+  - damn
+  - sibei
+  - jialat
+  - steady
+  - chop
+
+sg:
+  - bojio
+  - kiasu
+  - kaypoh
+  - atas
+  - chope
+  - lepak
+  - sabo
+  - siao
+  - wayang
+  - zhun
+  - catch no ball
+  - lah hor
+  - don't play play
+  - act blur
+  - arrow
+
+my:
+  - boleh
+  - tapi
+  - macam
+  - macam mana
+  - jangan
+  - sudah
+  - belum
+  - lagi
+  - sikit
+  - banyak
+  - gila
+  - teruk
+  - cincai
+  - tak apa
+  - apa ni
+  - mahal
+  - murah
+  - kedai
+  - mamak
+  - yum cha
+  - potong stim
+  - buat apa

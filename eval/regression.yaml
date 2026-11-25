@@ -1,0 +1,54 @@
+# Catastrophic-forgetting guard. Stage 1 register adaptation can wash out the
+# instruction-following behaviour we are deliberately borrowing from the Instruct
+# model, and a Singlish-only eval would never notice.
+#
+# Each prompt asserts cheap, checkable properties rather than exact text.
+#   must_include: substrings (case-insensitive); any one is enough
+#   max_marker_density: markers per token ceiling -- catches dialect bleeding into
+#                       contexts where plain English was asked for
+#   min_words / max_words: shape
+
+prompts:
+  - id: rg01
+    text: "What is the capital of Malaysia? Answer in one word."
+    must_include: ["kuala lumpur", "kl"]
+    max_marker_density: 0.10
+    max_words: 12
+  - id: rg02
+    text: "List exactly three primary colours as a numbered list."
+    must_include: ["1.", "1)"]
+    max_marker_density: 0.10
+  - id: rg03
+    text: "Write a formal one-sentence apology for missing a business meeting."
+    must_include: ["apolog", "sorry", "regret"]
+    max_marker_density: 0.05
+    min_words: 8
+  - id: rg04
+    text: "Translate to standard English: 'Aiyo, the thing cannot work lah.'"
+    must_include: ["work", "not"]
+    max_marker_density: 0.05
+  - id: rg05
+    text: "What is 17 multiplied by 4?"
+    must_include: ["68"]
+    max_marker_density: 0.10
+  - id: rg06
+    text: "Summarise in one sentence: the sun is a star at the centre of the solar system."
+    must_include: ["sun", "star"]
+    max_marker_density: 0.08
+  - id: rg07
+    text: "Reply with only the word OK and nothing else."
+    must_include: ["ok"]
+    max_words: 4
+  - id: rg08
+    text: "Write a Python one-liner that reverses a string s."
+    must_include: ["[::-1]", "reversed"]
+    max_marker_density: 0.05
+  - id: rg09
+    text: "Name two countries that border Thailand."
+    must_include: ["malaysia", "laos", "myanmar", "cambodia"]
+    max_marker_density: 0.10
+  - id: rg10
+    text: "In formal written English, explain what a mortgage is, in two sentences."
+    must_include: ["loan", "property", "borrow"]
+    max_marker_density: 0.05
+    min_words: 15

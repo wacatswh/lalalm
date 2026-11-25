@@ -1,0 +1,73 @@
+# Fixed eval set. 50 prompts, hand-written, committed, never changed casually --
+# the whole point is that run N+1 is comparable to run N.
+#
+# NEEDS REVIEW by the user (Malaysian). Register mistakes in these prompts are the
+# kind of thing an agent cannot self-check; if a prompt reads wrong, fix it BEFORE
+# the first real training run, not after, because changing the set invalidates
+# every earlier comparison.
+#
+# variety: which dialect the response should be in
+# scenario: coarse register bucket, for per-scenario breakdown in the report
+
+prompts:
+  # ---------------- sg / casual chat ----------------
+  - {id: sg01, variety: sg, scenario: chat, text: "eh you free this weekend or not"}
+  - {id: sg02, variety: sg, scenario: chat, text: "why you never reply my message yesterday"}
+  - {id: sg03, variety: sg, scenario: chat, text: "bro I just got my bonus, how ah celebrate how"}
+  - {id: sg04, variety: sg, scenario: chat, text: "you watched the new movie already?"}
+  - {id: sg05, variety: sg, scenario: chat, text: "wah long time never see you, how you been"}
+  - {id: sg06, variety: sg, scenario: chat, text: "later after work want to go gym together?"}
+  # ---------------- sg / complaining ----------------
+  - {id: sg07, variety: sg, scenario: complain, text: "my boss make me stay back again tonight"}
+  - {id: sg08, variety: sg, scenario: complain, text: "MRT breakdown again during peak hour, I was so late"}
+  - {id: sg09, variety: sg, scenario: complain, text: "the queue at the hawker centre damn long today"}
+  - {id: sg10, variety: sg, scenario: complain, text: "my neighbour renovate from 8am every day, cannot sleep"}
+  - {id: sg11, variety: sg, scenario: complain, text: "COE price go up again, how to buy car like that"}
+  - {id: sg12, variety: sg, scenario: complain, text: "aircon spoil in this weather, I want to die already"}
+  # ---------------- sg / directions ----------------
+  - {id: sg13, variety: sg, scenario: directions, text: "how to go Bugis from Jurong East"}
+  - {id: sg14, variety: sg, scenario: directions, text: "where can park near Chinatown on a Sunday"}
+  - {id: sg15, variety: sg, scenario: directions, text: "is it faster to take bus or MRT to Changi"}
+  - {id: sg16, variety: sg, scenario: directions, text: "I'm lost at the mall, how to find the carpark lift"}
+  # ---------------- sg / food ----------------
+  - {id: sg17, variety: sg, scenario: food, text: "recommend me somewhere to eat chicken rice"}
+  - {id: sg18, variety: sg, scenario: food, text: "which one better, laksa or bak chor mee"}
+  - {id: sg19, variety: sg, scenario: food, text: "I want supper, what still open now"}
+  - {id: sg20, variety: sg, scenario: food, text: "is durian really that good or people just hype"}
+  # ---------------- sg / favour + news ----------------
+  - {id: sg21, variety: sg, scenario: favour, text: "can help me book the badminton court or not"}
+  - {id: sg22, variety: sg, scenario: favour, text: "can lend me fifty dollars until payday"}
+  - {id: sg23, variety: sg, scenario: favour, text: "help me check whether the shop open tomorrow"}
+  - {id: sg24, variety: sg, scenario: news, text: "you heard about the price increase next month?"}
+  - {id: sg25, variety: sg, scenario: news, text: "they say work from home going to stop, true or not"}
+
+  # ---------------- my / casual chat ----------------
+  - {id: my01, variety: my, scenario: chat, text: "eh bro you makan already or not"}
+  - {id: my02, variety: my, scenario: chat, text: "this weekend you free tak"}
+  - {id: my03, variety: my, scenario: chat, text: "long time tak jumpa, apa cerita"}
+  - {id: my04, variety: my, scenario: chat, text: "you balik kampung this raya?"}
+  - {id: my05, variety: my, scenario: chat, text: "later want go yum cha or not"}
+  - {id: my06, variety: my, scenario: chat, text: "wei you dah tengok that drama everyone talking about"}
+  # ---------------- my / complaining ----------------
+  - {id: my07, variety: my, scenario: complain, text: "jam teruk kat federal highway tadi, two hours sia"}
+  - {id: my08, variety: my, scenario: complain, text: "my landlord naik rent again, boleh tahan ke macam ni"}
+  - {id: my09, variety: my, scenario: complain, text: "petrol price naik lagi, macam mana nak survive"}
+  - {id: my10, variety: my, scenario: complain, text: "the aircond in my office cold gila, I bring jacket every day"}
+  - {id: my11, variety: my, scenario: complain, text: "my internet slow sangat tonight, cannot watch anything"}
+  - {id: my12, variety: my, scenario: complain, text: "boss suruh OT lagi, tak habis habis"}
+  # ---------------- my / directions ----------------
+  - {id: my13, variety: my, scenario: directions, text: "how to go KLCC from Subang, best take what"}
+  - {id: my14, variety: my, scenario: directions, text: "mana boleh park kat Bukit Bintang on weekend"}
+  - {id: my15, variety: my, scenario: directions, text: "LRT or Grab faster to go airport ah"}
+  - {id: my16, variety: my, scenario: directions, text: "I sesat kat Mid Valley, how to get out to the main road"}
+  # ---------------- my / food ----------------
+  - {id: my17, variety: my, scenario: food, text: "recommend nasi lemak best kat KL"}
+  - {id: my18, variety: my, scenario: food, text: "mamak or kopitiam, which one you prefer"}
+  - {id: my19, variety: my, scenario: food, text: "lapar tengah malam, apa still buka"}
+  - {id: my20, variety: my, scenario: food, text: "char kuey teow penang betul betul lagi best ke"}
+  # ---------------- my / favour + news ----------------
+  - {id: my21, variety: my, scenario: favour, text: "boleh tolong book the futsal court tak"}
+  - {id: my22, variety: my, scenario: favour, text: "can pinjam fifty ringgit until end of month"}
+  - {id: my23, variety: my, scenario: favour, text: "tolong check kedai tu buka esok boleh"}
+  - {id: my24, variety: my, scenario: news, text: "you dengar pasal the subsidy thing next month?"}
+  - {id: my25, variety: my, scenario: news, text: "they cakap toll naik lagi, betul ke"}
