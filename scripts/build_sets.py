@@ -40,7 +40,15 @@ VOCAB_RATIO = 0.10
 MIN_PROMPT_TOKENS = 3
 MIN_RESPONSE_TOKENS = 4
 MAX_REPEAT = 3
-PAIR_TARGET = 12000
+# Stage 2 takes every pair whose response carries dialect, and tops up with the
+# densest markerless ones ONLY if that falls below MIN_PAIRS. Measured sweep against
+# the human baseline (0.0836):
+#   3000 -> 1.53x    5000 -> 1.11x    8000 -> 0.73x    12000 -> 0.48x UNDERTRAINED
+#   all marker-bearing (~6.4k) -> 0.90x, dead centre of eval.py's 0.5-1.6x band.
+# A fixed 12k target meant topping up with ~8k markerless pairs, which teach the model
+# to answer in plain English -- the exact opposite of stage 2's job. Count was the
+# wrong objective; density is the right one.
+MIN_PAIRS = 4000
 SEED = 1337
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -65,10 +73,18 @@ def capped(rows: list[dict]) -> list[dict]:
 
 
 def weight(r: dict, median: float) -> int:
-    """How many times a row appears in stage 1. Ranking, not gating."""
+    """How many times a row appears in stage 1. Ranking, not gating.
+
+    Board-targeted rows get one extra repeat: they measure ~4x the marker density of
+    the pre-015 sitemap rows, so they should carry more of stage 1 without the sparse
+    rows being dropped (rank, never gate).
+    """
     if median <= 0:
         return 1
-    return max(1, min(MAX_REPEAT, int(r["marker_score"] / median) if r["marker_score"] else 1))
+    w = max(1, min(MAX_REPEAT, int(r["marker_score"] / median) if r["marker_score"] else 1))
+    if r.get("board"):
+        w = min(MAX_REPEAT + 1, w + 1)
+    return w
 
 
 def main() -> None:
@@ -106,7 +122,8 @@ def main() -> None:
         if p["n_tokens"] < MIN_PROMPT_TOKENS or r["n_tokens"] < MIN_RESPONSE_TOKENS:
             continue
         pairs.append({"prompt": p["text"], "response": r["text"],
-                      "variety": r["variety"], "src": r["source"]})
+                      "variety": r["variety"], "src": r["source"],
+                      "targeted": bool(r.get("board"))})
     # Stage 2 is the BEHAVIOURAL stage, so response register matters more than volume.
     # Sorting alone achieved nothing (every pair was still emitted, so the set sat at
     # the corpus mean and measured 0.31x the human baseline -- undertrained). Partition
@@ -114,14 +131,23 @@ def main() -> None:
     # remainder to reach PAIR_TARGET.
     for x in pairs:
         x["_d"] = markers.density(x["response"], x["variety"])
+    # Prefer board-targeted rows. The pre-015 sitemap rows are the majority of the
+    # corpus but measure 0.0039 density against 0.0161 for board-targeted ones, so
+    # including them indiscriminately drags stage 2 down to the corpus mean. They are
+    # still used to top up volume rather than discarded.
     withm = [x for x in pairs if x["_d"] > 0]
-    rest = sorted((x for x in pairs if x["_d"] == 0), key=lambda x: -len(x["response"]))
-    need = max(PAIR_TARGET - len(withm), 0)
+    withm.sort(key=lambda x: (not x["targeted"], -x["_d"]))
+    rest = sorted((x for x in pairs if x["_d"] == 0),
+                  key=lambda x: (not x["targeted"], -len(x["response"])))
+    need = max(MIN_PAIRS - len(withm), 0)
     pairs = withm + rest[:need]
+    tg = sum(1 for x in pairs if x["targeted"])
     print(f"  stage2 selection: {len(withm)} marker-bearing + {min(need, len(rest))} "
-          f"topped up from {len(rest)} markerless")
+          f"topped up (floor {MIN_PAIRS}) from {len(rest)} markerless; {tg}/{len(pairs)} "
+          f"({tg / max(len(pairs), 1):.0%}) from targeted boards")
     for x in pairs:
         x.pop("_d", None)
+        x.pop("targeted", None)
 
     # ---- vocab pairs, capped ----
     vocab = []
